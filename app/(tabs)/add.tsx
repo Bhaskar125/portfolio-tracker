@@ -1,6 +1,7 @@
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { useTransactions } from '@/contexts/TransactionContext';
+import { useVoiceTransaction } from '@/hooks/useVoiceTransaction';
 import { useState } from 'react';
 import {
     Alert,
@@ -21,6 +22,7 @@ const QUICK_AMOUNTS = [100, 500, 1000, 2000, 5000];
 
 export default function AddTransactionScreen() {
   const { addTransaction } = useTransactions();
+  const { startRecording, stopRecording, isRecording, isProcessing, isVoiceAvailable } = useVoiceTransaction();
   
   const [transactionType, setTransactionType] = useState<'income' | 'expense'>('expense');
   const [amount, setAmount] = useState('');
@@ -30,6 +32,50 @@ export default function AddTransactionScreen() {
 
   const handleQuickAmount = (quickAmount: number) => {
     setAmount(quickAmount.toString());
+  };
+
+  const handleVoiceInput = async () => {
+    try {
+      if (isRecording) {
+        // Stop recording and process
+        const voiceTransaction = await stopRecording();
+        
+        if (voiceTransaction && voiceTransaction.confidence > 0.6) {
+          // Auto-fill form with voice input
+          setTransactionType(voiceTransaction.type);
+          setAmount(voiceTransaction.amount.toString());
+          setDescription(voiceTransaction.description);
+          setCategory(voiceTransaction.category);
+          
+          Alert.alert(
+            'Voice Input Processed! 🎉',
+            `Detected: ${voiceTransaction.type} of ₹${voiceTransaction.amount} for ${voiceTransaction.category}\n\nConfidence: ${Math.round(voiceTransaction.confidence * 100)}%\n\nReview the details and tap "Add Transaction" to confirm.`,
+            [
+              { text: 'Edit Details', style: 'default' },
+              { 
+                text: 'Add Now', 
+                style: 'default',
+                onPress: () => handleSubmit()
+              }
+            ]
+          );
+        } else {
+          Alert.alert(
+            'Low Confidence',
+            'Could not clearly understand the voice input. Please try speaking more clearly or add the transaction manually.'
+          );
+        }
+      } else {
+        // Start recording
+        await startRecording();
+      }
+          } catch (error) {
+        console.error('Voice input error:', error);
+        Alert.alert(
+          'Voice Input Error', 
+          'There was an error with voice input. Please fill out the form manually.'
+        );
+      }
   };
 
   const handleSubmit = () => {
@@ -230,6 +276,41 @@ export default function AddTransactionScreen() {
             Add {transactionType === 'income' ? 'Income' : 'Expense'}
           </Text>
         </TouchableOpacity>
+
+        {/* Voice Input Button */}
+        <TouchableOpacity 
+                      style={[
+              styles.voiceButton,
+              { 
+                backgroundColor: !isVoiceAvailable ? '#9CA3AF' : isRecording ? '#EF4444' : '#8B5CF6',
+                opacity: isProcessing ? 0.7 : 1
+              }
+            ]} 
+            onPress={handleVoiceInput}
+            disabled={isProcessing || !isVoiceAvailable}
+        >
+          <View style={styles.voiceButtonContent}>
+                          <Text style={styles.voiceButtonIcon}>
+                {!isVoiceAvailable ? '🚫' : isProcessing ? '🤖' : isRecording ? '⏹️' : '🎤'}
+              </Text>
+              <Text style={styles.voiceButtonText}>
+                {!isVoiceAvailable ? 'Voice Unavailable' : isProcessing ? 'Processing...' : isRecording ? 'Stop Recording' : 'Voice Input'}
+              </Text>
+          </View>
+          {isRecording && (
+            <View style={styles.recordingIndicator}>
+              <View style={styles.pulsingDot} />
+            </View>
+          )}
+        </TouchableOpacity>
+
+        {/* Voice Instructions */}
+        <View style={styles.voiceInstructions}>
+          <Text style={styles.instructionsTitle}>💡 Voice Input Tips</Text>
+          <Text style={styles.instructionText}>
+            Try saying: "I spent 25 rupees on lunch" or "Earned 5000 from freelance work"
+          </Text>
+        </View>
 
         {/* Quick Actions */}
         <View style={styles.quickActions}>
@@ -457,5 +538,68 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#6B7280',
     fontWeight: '500',
+  },
+  voiceButton: {
+    paddingVertical: 18,
+    borderRadius: 16,
+    alignItems: 'center',
+    marginBottom: 24,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  voiceButtonContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  voiceButtonIcon: {
+    fontSize: 24,
+  },
+  voiceButtonText: {
+    fontSize: 18,
+    fontWeight: '600',
+  },
+  recordingIndicator: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    borderRadius: 16,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  pulsingDot: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    borderRadius: 16,
+    backgroundColor: '#FFFFFF',
+    opacity: 0.7,
+  },
+  voiceInstructions: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  instructionsTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#374151',
+    marginBottom: 16,
+  },
+  instructionText: {
+    fontSize: 14,
+    color: '#6B7280',
   },
 }); 

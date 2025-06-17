@@ -89,60 +89,62 @@ export default function DashboardScreen() {
     const maxValue = Math.max(...data.map(d => d.amount));
     const minValue = Math.min(...data.map(d => d.amount));
     const range = maxValue - minValue || 1;
-    const chartWidth = screenWidth - 120;
-    const chartHeight = 120;
+    const chartWidth = screenWidth - 80;
+    const chartHeight = 100;
+    const pointWidth = chartWidth / (data.length - 1);
 
     return (
       <View style={styles.chartContainer}>
         <View style={styles.chartArea}>
           {/* Background grid lines */}
-          {[0, 1, 2, 3, 4].map((line) => (
+          {[0, 1, 2, 3].map((line) => (
             <View
               key={line}
               style={[
                 styles.gridLine,
-                { bottom: (line * chartHeight) / 4 }
+                { bottom: (line * chartHeight) / 3 }
               ]}
             />
           ))}
           
-          {/* Data points and connecting lines */}
+          {/* Data points */}
           {data.map((point, index) => {
-            const x = (index / (data.length - 1)) * chartWidth;
+            const x = index * pointWidth;
             const y = ((point.amount - minValue) / range) * chartHeight;
-            const nextPoint = data[index + 1];
             
             return (
               <View key={index}>
-                {/* Connection line to next point */}
-                {nextPoint && (
+                {/* Data point */}
+                <View
+                  style={[
+                    styles.dataPoint,
+                    { 
+                      left: x - 4, 
+                      bottom: y - 4 
+                    }
+                  ]}
+                />
+                
+                {/* Connecting line to next point */}
+                {index < data.length - 1 && (
                   <View
                     style={[
                       styles.connectionLine,
                       {
-                        left: x + 6,
-                        bottom: y + 6,
-                        width: chartWidth / (data.length - 1) - 12,
+                        left: x,
+                        bottom: y,
+                        width: pointWidth,
+                        height: 2,
                         transform: [{
                           rotate: `${Math.atan2(
-                            ((nextPoint.amount - minValue) / range) * chartHeight - y,
-                            chartWidth / (data.length - 1)
+                            ((data[index + 1].amount - minValue) / range) * chartHeight - y,
+                            pointWidth
                           )}rad`
                         }]
                       }
                     ]}
                   />
                 )}
-                
-                {/* Data point */}
-                <View
-                  style={[
-                    styles.dataPoint,
-                    { left: x, bottom: y }
-                  ]}
-                >
-                  <View style={styles.dataPointInner} />
-                </View>
               </View>
             );
           })}
@@ -570,48 +572,46 @@ const styles = StyleSheet.create({
     marginVertical: 10,
   },
   chartArea: {
-    width: screenWidth - 120,
-    height: 120,
+    width: screenWidth - 80,
+    height: 100,
     position: 'relative',
     backgroundColor: '#F8FAFC',
     borderRadius: 12,
     marginBottom: 16,
+    overflow: 'hidden',
   },
   gridLine: {
     position: 'absolute',
-    left: 0,
-    right: 0,
+    left: 10,
+    right: 10,
     height: 1,
     backgroundColor: '#E5E7EB',
   },
   dataPoint: {
     position: 'absolute',
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    backgroundColor: '#FFFFFF',
-    borderWidth: 3,
-    borderColor: '#3B82F6',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  dataPointInner: {
-    width: 4,
-    height: 4,
-    borderRadius: 2,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
     backgroundColor: '#3B82F6',
+    borderWidth: 2,
+    borderColor: '#FFFFFF',
+    shadowColor: '#3B82F6',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.3,
+    shadowRadius: 2,
+    elevation: 2,
   },
   connectionLine: {
     position: 'absolute',
-    height: 3,
     backgroundColor: '#3B82F6',
-    borderRadius: 2,
+    borderRadius: 1,
+    transformOrigin: 'left center',
   },
   xAxisLabels: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    width: screenWidth - 120,
-    paddingHorizontal: 6,
+    width: screenWidth - 80,
+    paddingHorizontal: 10,
   },
   xAxisLabel: {
     fontSize: 11,

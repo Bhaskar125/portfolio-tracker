@@ -10,7 +10,10 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.portfoliotracker.app"
+      "bundleIdentifier": "com.portfoliotracker.app",
+      "infoPlist": {
+        "NSMicrophoneUsageDescription": "This app needs access to microphone to record voice transactions."
+      }
     },
     "android": {
       "package": "com.portfoliotracker.app",
@@ -18,7 +21,10 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "permissions": [
+        "android.permission.RECORD_AUDIO"
+      ]
     },
     "web": {
       "bundler": "metro",
@@ -28,6 +34,12 @@
     "plugins": [
       "expo-router",
       "expo-dev-client",
+      [
+        "expo-av",
+        {
+          "microphonePermission": "Allow $(PRODUCT_NAME) to access your microphone to record voice transactions."
+        }
+      ],
       [
         "expo-splash-screen",
         {
