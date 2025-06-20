@@ -1,5 +1,6 @@
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
+import { VoiceRecordingModal } from '@/components/VoiceRecordingModal';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTransactions } from '@/contexts/TransactionContext';
 import { useState } from 'react';
@@ -30,6 +31,7 @@ export default function DashboardScreen() {
   const { transactions } = useTransactions();
   const [monthlyBudget] = useState(50000);
   const [chartData] = useState(generateChartData());
+  const [voiceModalVisible, setVoiceModalVisible] = useState(false);
 
   const getCurrentMonthTransactions = () => {
     const currentMonth = new Date().getMonth();
@@ -268,11 +270,14 @@ export default function DashboardScreen() {
               <Text style={styles.quickActionLabel}>Analytics</Text>
             </TouchableOpacity>
             
-            <TouchableOpacity style={styles.quickActionCard}>
+            <TouchableOpacity 
+              style={styles.quickActionCard}
+              onPress={() => setVoiceModalVisible(true)}
+            >
               <View style={styles.quickActionIcon}>
-                <Text style={styles.quickActionEmoji}>⚙️</Text>
+                <Text style={styles.quickActionEmoji}>🎤</Text>
               </View>
-              <Text style={styles.quickActionLabel}>Settings</Text>
+              <Text style={styles.quickActionLabel}>Voice Input</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -427,6 +432,12 @@ export default function DashboardScreen() {
           ))}
         </View>
       </ScrollView>
+
+      {/* Voice Recording Modal */}
+      <VoiceRecordingModal
+        visible={voiceModalVisible}
+        onClose={() => setVoiceModalVisible(false)}
+      />
     </ThemedView>
   );
 }

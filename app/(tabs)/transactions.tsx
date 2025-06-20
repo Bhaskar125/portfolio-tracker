@@ -1,5 +1,6 @@
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
+import { VoiceRecordingModal } from '@/components/VoiceRecordingModal';
 import { useTransactions } from '@/contexts/TransactionContext';
 import { useState } from 'react';
 import { Alert, Modal, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
@@ -14,11 +15,16 @@ export default function TransactionsScreen() {
   
   // Modal state
   const [modalVisible, setModalVisible] = useState(false);
+  const [voiceModalVisible, setVoiceModalVisible] = useState(false);
   const [transactionType, setTransactionType] = useState<'income' | 'expense'>('expense');
   const [amount, setAmount] = useState('');
   const [description, setDescription] = useState('');
   const [category, setCategory] = useState('');
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+
+  const handleVoiceInput = () => {
+    setVoiceModalVisible(true);
+  };
 
   const handleAddTransaction = () => {
     if (!amount || !description || !category) {
@@ -76,6 +82,15 @@ export default function TransactionsScreen() {
           <ThemedText type="title">Transactions</ThemedText>
           <ThemedText style={styles.headerSubtitle}>Your financial activity</ThemedText>
         </View>
+        
+        {/* Voice Input Button */}
+        <TouchableOpacity 
+          style={styles.voiceButton}
+          onPress={handleVoiceInput}
+          activeOpacity={0.7}
+        >
+          <Text style={styles.voiceButtonIcon}>🎤</Text>
+        </TouchableOpacity>
       </View>
       
       <ScrollView style={styles.content}>
@@ -310,6 +325,14 @@ export default function TransactionsScreen() {
                   placeholderTextColor="#9CA3AF"
                 />
               </View>
+
+              {/* Voice Instructions */}
+              <View style={styles.voiceInstructions}>
+                <Text style={styles.voiceInstructionsTitle}>🎤 Voice Input Available</Text>
+                <Text style={styles.voiceInstructionsText}>
+                  Tap the 🎤 button in the header to use voice input for quick transaction entry.
+                </Text>
+              </View>
             </ScrollView>
 
             <View style={styles.modalButtons}>
@@ -323,6 +346,12 @@ export default function TransactionsScreen() {
           </View>
         </View>
       </Modal>
+
+      {/* Voice Recording Modal */}
+      <VoiceRecordingModal
+        visible={voiceModalVisible}
+        onClose={() => setVoiceModalVisible(false)}
+      />
     </ThemedView>
   );
 }
@@ -613,4 +642,51 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
   },
-}); 
+  voiceButton: {
+    padding: 12,
+    borderRadius: 12,
+  },
+  voiceButtonIcon: {
+    fontSize: 24,
+  },
+  recordingIndicator: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+     pulsingDot: {
+     width: 12,
+     height: 12,
+     borderRadius: 6,
+     backgroundColor: '#FFFFFF',
+   },
+   voiceInstructions: {
+     backgroundColor: '#F0F9FF',
+     borderRadius: 12,
+     padding: 16,
+     marginTop: 16,
+     borderWidth: 1,
+     borderColor: '#E0F2FE',
+   },
+   voiceInstructionsTitle: {
+     fontSize: 14,
+     fontWeight: '600',
+     color: '#0369A1',
+     marginBottom: 8,
+   },
+   voiceInstructionsText: {
+     fontSize: 12,
+     color: '#0284C7',
+     marginBottom: 8,
+   },
+   voiceExample: {
+     fontSize: 11,
+     color: '#0891B2',
+     marginLeft: 8,
+     marginBottom: 2,
+   },
+ }); 

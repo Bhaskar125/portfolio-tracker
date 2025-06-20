@@ -1,7 +1,7 @@
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
+import { VoiceRecordingModal } from '@/components/VoiceRecordingModal';
 import { useTransactions } from '@/contexts/TransactionContext';
-import { useVoiceTransaction } from '@/hooks/useVoiceTransaction';
 import { useState } from 'react';
 import {
     Alert,
@@ -22,60 +22,20 @@ const QUICK_AMOUNTS = [100, 500, 1000, 2000, 5000];
 
 export default function AddTransactionScreen() {
   const { addTransaction } = useTransactions();
-  const { startRecording, stopRecording, isRecording, isProcessing, isVoiceAvailable } = useVoiceTransaction();
   
   const [transactionType, setTransactionType] = useState<'income' | 'expense'>('expense');
   const [amount, setAmount] = useState('');
   const [description, setDescription] = useState('');
   const [category, setCategory] = useState('');
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+  const [voiceModalVisible, setVoiceModalVisible] = useState(false);
 
   const handleQuickAmount = (quickAmount: number) => {
     setAmount(quickAmount.toString());
   };
 
-  const handleVoiceInput = async () => {
-    try {
-      if (isRecording) {
-        // Stop recording and process
-        const voiceTransaction = await stopRecording();
-        
-        if (voiceTransaction && voiceTransaction.confidence > 0.6) {
-          // Auto-fill form with voice input
-          setTransactionType(voiceTransaction.type);
-          setAmount(voiceTransaction.amount.toString());
-          setDescription(voiceTransaction.description);
-          setCategory(voiceTransaction.category);
-          
-          Alert.alert(
-            'Voice Input Processed! 🎉',
-            `Detected: ${voiceTransaction.type} of ₹${voiceTransaction.amount} for ${voiceTransaction.category}\n\nConfidence: ${Math.round(voiceTransaction.confidence * 100)}%\n\nReview the details and tap "Add Transaction" to confirm.`,
-            [
-              { text: 'Edit Details', style: 'default' },
-              { 
-                text: 'Add Now', 
-                style: 'default',
-                onPress: () => handleSubmit()
-              }
-            ]
-          );
-        } else {
-          Alert.alert(
-            'Low Confidence',
-            'Could not clearly understand the voice input. Please try speaking more clearly or add the transaction manually.'
-          );
-        }
-      } else {
-        // Start recording
-        await startRecording();
-      }
-          } catch (error) {
-        console.error('Voice input error:', error);
-        Alert.alert(
-          'Voice Input Error', 
-          'There was an error with voice input. Please fill out the form manually.'
-        );
-      }
+  const handleVoiceInput = () => {
+    setVoiceModalVisible(true);
   };
 
   const handleSubmit = () => {
@@ -279,29 +239,13 @@ export default function AddTransactionScreen() {
 
         {/* Voice Input Button */}
         <TouchableOpacity 
-                      style={[
-              styles.voiceButton,
-              { 
-                backgroundColor: !isVoiceAvailable ? '#9CA3AF' : isRecording ? '#EF4444' : '#8B5CF6',
-                opacity: isProcessing ? 0.7 : 1
-              }
-            ]} 
-            onPress={handleVoiceInput}
-            disabled={isProcessing || !isVoiceAvailable}
+          style={styles.voiceButton}
+          onPress={handleVoiceInput}
         >
           <View style={styles.voiceButtonContent}>
-                          <Text style={styles.voiceButtonIcon}>
-                {!isVoiceAvailable ? '🚫' : isProcessing ? '🤖' : isRecording ? '⏹️' : '🎤'}
-              </Text>
-              <Text style={styles.voiceButtonText}>
-                {!isVoiceAvailable ? 'Voice Unavailable' : isProcessing ? 'Processing...' : isRecording ? 'Stop Recording' : 'Voice Input'}
-              </Text>
+            <Text style={styles.voiceButtonIcon}>🎤</Text>
+            <Text style={styles.voiceButtonText}>Voice Input</Text>
           </View>
-          {isRecording && (
-            <View style={styles.recordingIndicator}>
-              <View style={styles.pulsingDot} />
-            </View>
-          )}
         </TouchableOpacity>
 
         {/* Voice Instructions */}
@@ -357,6 +301,12 @@ export default function AddTransactionScreen() {
           </View>
         </View>
       </ScrollView>
+
+      {/* Voice Recording Modal */}
+      <VoiceRecordingModal
+        visible={voiceModalVisible}
+        onClose={() => setVoiceModalVisible(false)}
+      />
     </ThemedView>
   );
 }
