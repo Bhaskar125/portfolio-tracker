@@ -3,7 +3,7 @@ import { ThemedView } from '@/components/ThemedView';
 import { OPENAI_API_KEY } from '@/constants/ApiKeys';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTransactions } from '@/contexts/TransactionContext';
-import axios from 'axios';
+
 import React, { useEffect, useRef, useState } from 'react';
 import {
     ActivityIndicator,
@@ -100,9 +100,13 @@ Net Savings: ₹${context.netSavings.toLocaleString()}
 
 Be conversational, helpful, and provide actionable financial advice. Keep responses concise.`;
 
-      const response = await axios.post(
-        'https://api.openai.com/v1/chat/completions',
-        {
+      const response = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${OPENAI_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
           model: 'gpt-3.5-turbo',
           messages: [
             { role: 'system', content: systemPrompt },
@@ -110,16 +114,11 @@ Be conversational, helpful, and provide actionable financial advice. Keep respon
           ],
           max_tokens: 300,
           temperature: 0.7,
-        },
-        {
-          headers: {
-            'Authorization': `Bearer ${OPENAI_API_KEY}`,
-            'Content-Type': 'application/json',
-          },
-        }
-      );
+        }),
+      });
 
-      const aiResponse = response.data.choices[0].message.content;
+      const data = await response.json();
+      const aiResponse = data.choices[0].message.content;
 
       const aiMessage: Message = {
         id: (Date.now() + 1).toString(),
