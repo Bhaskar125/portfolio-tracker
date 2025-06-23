@@ -1,6 +1,5 @@
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
-import { VoiceRecordingModal } from '@/components/VoiceRecordingModal';
 import { useTransactions } from '@/contexts/TransactionContext';
 import { useState } from 'react';
 import { Alert, Modal, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
@@ -15,16 +14,14 @@ export default function TransactionsScreen() {
   
   // Modal state
   const [modalVisible, setModalVisible] = useState(false);
-  const [voiceModalVisible, setVoiceModalVisible] = useState(false);
+
   const [transactionType, setTransactionType] = useState<'income' | 'expense'>('expense');
   const [amount, setAmount] = useState('');
   const [description, setDescription] = useState('');
   const [category, setCategory] = useState('');
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
 
-  const handleVoiceInput = () => {
-    setVoiceModalVisible(true);
-  };
+
 
   const handleAddTransaction = () => {
     if (!amount || !description || !category) {
@@ -82,15 +79,6 @@ export default function TransactionsScreen() {
           <ThemedText type="title">Transactions</ThemedText>
           <ThemedText style={styles.headerSubtitle}>Your financial activity</ThemedText>
         </View>
-        
-        {/* Voice Input Button */}
-        <TouchableOpacity 
-          style={styles.voiceButton}
-          onPress={handleVoiceInput}
-          activeOpacity={0.7}
-        >
-          <Text style={styles.voiceButtonIcon}>🎤</Text>
-        </TouchableOpacity>
       </View>
       
       <ScrollView style={styles.content}>
@@ -347,11 +335,7 @@ export default function TransactionsScreen() {
         </View>
       </Modal>
 
-      {/* Voice Recording Modal */}
-      <VoiceRecordingModal
-        visible={voiceModalVisible}
-        onClose={() => setVoiceModalVisible(false)}
-      />
+
     </ThemedView>
   );
 }
@@ -642,13 +626,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
   },
-  voiceButton: {
-    padding: 12,
-    borderRadius: 12,
-  },
-  voiceButtonIcon: {
-    fontSize: 24,
-  },
+
   recordingIndicator: {
     position: 'absolute',
     top: 0,
