@@ -194,9 +194,18 @@ export default function DashboardScreen() {
         </View>
         <TouchableOpacity 
           style={styles.logoutButton}
-          onPress={logout}
+          onPress={() => {
+            Alert.alert(
+              'Sign Out',
+              'Are you sure you want to sign out?',
+              [
+                { text: 'Cancel', style: 'cancel' },
+                { text: 'Sign Out', style: 'destructive', onPress: logout }
+              ]
+            );
+          }}
         >
-          <Text style={styles.logoutText}>•••</Text>
+          <Text style={styles.logoutText}>🚪</Text>
         </TouchableOpacity>
       </View>
 
