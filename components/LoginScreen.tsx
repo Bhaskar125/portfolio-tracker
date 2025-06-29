@@ -1,6 +1,6 @@
 import { useAuth } from '@/contexts/AuthContext';
 import React, { useState } from 'react';
-import { Alert, Dimensions, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Alert, Dimensions, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 // Test user credentials
 const TEST_USER = {
@@ -59,7 +59,10 @@ export default function LoginScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingView 
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    >
       {/* Background Pattern */}
       <View style={styles.backgroundPattern}>
         <View style={[styles.patternElement, styles.pattern1]} />
@@ -68,7 +71,12 @@ export default function LoginScreen() {
         <View style={[styles.patternElement, styles.pattern4]} />
       </View>
 
-      <View style={styles.content}>
+      <ScrollView 
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+      >
         {/* Logo Section */}
         <View style={styles.logoSection}>
           <View style={styles.logoContainer}>
@@ -180,68 +188,107 @@ export default function LoginScreen() {
             </View>
           </View>
 
-          {/* Action Button */}
-          <TouchableOpacity 
-            style={[styles.primaryButton, isLoading && styles.primaryButtonLoading]} 
-            onPress={handleLogin}
-            disabled={isLoading}
-          >
-            {isLoading ? (
-              <View style={styles.loadingContainer}>
-                <Text style={styles.loadingDot}>⚫</Text>
-                <Text style={styles.loadingText}>Authenticating...</Text>
-              </View>
-            ) : (
-              <View style={styles.buttonContent}>
-                <Text style={styles.buttonText}>
-                  {isSignUp ? 'Create Account' : 'Sign In'}
-                </Text>
-                <Text style={styles.buttonArrow}>→</Text>
-              </View>
+          {/* Buttons Section */}
+          <View style={styles.buttonsSection}>
+            {/* Quick Sign In Section (only for sign in mode) */}
+            {!isSignUp && (
+              <TouchableOpacity 
+                style={styles.quickSignInButton}
+                onPress={() => {
+                  setEmail(TEST_USER.email);
+                  setPassword(TEST_USER.password);
+                  // Auto sign in after a short delay
+                  setTimeout(() => {
+                    handleLogin();
+                  }, 500);
+                }}
+                disabled={isLoading}
+              >
+                <View style={styles.quickSignInContent}>
+                  <Text style={styles.quickSignInIcon}>⚡</Text>
+                  <Text style={styles.quickSignInText}>Quick Sign In with Demo</Text>
+                </View>
+              </TouchableOpacity>
             )}
-          </TouchableOpacity>
 
-          {/* Divider */}
-          <View style={styles.dividerContainer}>
-            <View style={styles.dividerLine} />
-            <Text style={styles.dividerText}>or</Text>
-            <View style={styles.dividerLine} />
+            {/* Main Action Button */}
+            <TouchableOpacity 
+              style={[styles.primaryButton, isLoading && styles.primaryButtonLoading]} 
+              onPress={handleLogin}
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <View style={styles.loadingContainer}>
+                  <Text style={styles.loadingDot}>⚫</Text>
+                  <Text style={styles.loadingText}>Authenticating...</Text>
+                </View>
+              ) : (
+                <View style={styles.buttonContent}>
+                  <Text style={styles.buttonText}>
+                    {isSignUp ? '🚀 Create Account' : '🔑 Sign In Now'}
+                  </Text>
+                  <Text style={styles.buttonArrow}>→</Text>
+                </View>
+              )}
+            </TouchableOpacity>
+
+            {/* Alternative Sign In Button for emphasis */}
+            {!isSignUp && !isLoading && (
+              <TouchableOpacity 
+                style={styles.secondaryButton}
+                onPress={handleLogin}
+              >
+                <Text style={styles.secondaryButtonText}>
+                  💻 Sign In to Dashboard
+                </Text>
+              </TouchableOpacity>
+            )}
           </View>
 
-          {/* Mode Switch */}
-          <TouchableOpacity 
-            style={styles.switchButton}
-            onPress={() => {
-              setIsSignUp(!isSignUp);
-              setEmail('');
-              setPassword('');
-              setName('');
-            }}
-          >
-            <Text style={styles.switchText}>
-              {isSignUp 
-                ? 'Already have an account? Sign In' 
-                : "Don't have an account? Create one"
-              }
-            </Text>
-          </TouchableOpacity>
-
-          {/* Demo Info */}
-          {!isSignUp && (
-            <View style={styles.infoCard}>
-              <View style={styles.infoHeader}>
-                <Text style={styles.infoIcon}>🔬</Text>
-                <Text style={styles.infoTitle}>Demo Credentials</Text>
-              </View>
-              <View style={styles.infoContent}>
-                <Text style={styles.infoText}>Email: test@example.com</Text>
-                <Text style={styles.infoText}>Password: password123</Text>
-              </View>
+          {/* Footer Section */}
+          <View style={styles.footerSection}>
+            {/* Divider */}
+            <View style={styles.dividerContainer}>
+              <View style={styles.dividerLine} />
+              <Text style={styles.dividerText}>or</Text>
+              <View style={styles.dividerLine} />
             </View>
-          )}
+
+            {/* Mode Switch */}
+            <TouchableOpacity 
+              style={styles.switchButton}
+              onPress={() => {
+                setIsSignUp(!isSignUp);
+                setEmail('');
+                setPassword('');
+                setName('');
+              }}
+            >
+              <Text style={styles.switchText}>
+                {isSignUp 
+                  ? 'Already have an account? Sign In' 
+                  : "Don't have an account? Create one"
+                }
+              </Text>
+            </TouchableOpacity>
+
+            {/* Demo Info */}
+            {!isSignUp && (
+              <View style={styles.infoCard}>
+                <View style={styles.infoHeader}>
+                  <Text style={styles.infoIcon}>🔬</Text>
+                  <Text style={styles.infoTitle}>Demo Credentials</Text>
+                </View>
+                <View style={styles.infoContent}>
+                  <Text style={styles.infoText}>Email: test@example.com</Text>
+                  <Text style={styles.infoText}>Password: password123</Text>
+                </View>
+              </View>
+            )}
+          </View>
         </View>
-      </View>
-    </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 
@@ -264,46 +311,49 @@ const styles = StyleSheet.create({
     opacity: 0.03,
   },
   pattern1: {
-    width: 300,
-    height: 300,
-    top: -150,
-    right: -150,
+    width: width * 0.75,
+    height: width * 0.75,
+    top: -width * 0.375,
+    right: -width * 0.375,
   },
   pattern2: {
-    width: 200,
-    height: 200,
-    bottom: -100,
-    left: -100,
+    width: width * 0.5,
+    height: width * 0.5,
+    bottom: -width * 0.25,
+    left: -width * 0.25,
   },
   pattern3: {
-    width: 150,
-    height: 150,
-    top: '40%',
-    right: -75,
+    width: width * 0.375,
+    height: width * 0.375,
+    top: height * 0.4,
+    right: -width * 0.1875,
   },
   pattern4: {
-    width: 120,
-    height: 120,
-    bottom: '30%',
-    left: -60,
+    width: width * 0.3,
+    height: width * 0.3,
+    bottom: height * 0.3,
+    left: -width * 0.15,
   },
-  content: {
+  scrollView: {
     flex: 1,
-    paddingHorizontal: 24,
-    paddingTop: 80,
-    paddingBottom: 40,
+  },
+  scrollContent: {
+    flexGrow: 1,
+    paddingHorizontal: width * 0.06, // 6% of screen width
+    paddingTop: height * 0.08, // 8% of screen height
+    paddingBottom: height * 0.05, // 5% of screen height
   },
   logoSection: {
     alignItems: 'center',
-    marginBottom: 50,
+    marginBottom: height * 0.04, // 4% of screen height
   },
   logoContainer: {
-    marginBottom: 30,
+    marginBottom: height * 0.025, // 2.5% of screen height
   },
   logoOuter: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
+    width: width * 0.25, // 25% of screen width
+    height: width * 0.25,
+    borderRadius: width * 0.125,
     backgroundColor: '#f8f8f8',
     justifyContent: 'center',
     alignItems: 'center',
@@ -314,9 +364,9 @@ const styles = StyleSheet.create({
     elevation: 8,
   },
   logoInner: {
-    width: 90,
-    height: 90,
-    borderRadius: 45,
+    width: width * 0.1875, // 18.75% of screen width
+    height: width * 0.1875,
+    borderRadius: width * 0.09375,
     backgroundColor: '#ffffff',
     justifyContent: 'center',
     alignItems: 'center',
@@ -327,27 +377,29 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
   logoIcon: {
-    fontSize: 36,
+    fontSize: Math.min(width * 0.09, 36), // Responsive font size
     fontWeight: 'bold',
     color: '#000000',
   },
   appTitle: {
-    fontSize: 32,
+    fontSize: Math.min(width * 0.08, 32), // Responsive font size
     fontWeight: 'bold',
     color: '#000000',
     marginBottom: 8,
     letterSpacing: -0.5,
+    textAlign: 'center',
   },
   appSubtitle: {
-    fontSize: 16,
+    fontSize: Math.min(width * 0.04, 16), // Responsive font size
     color: '#666666',
     textAlign: 'center',
     lineHeight: 22,
+    paddingHorizontal: width * 0.05,
   },
   mainCard: {
     backgroundColor: '#ffffff',
-    borderRadius: 32,
-    padding: 32,
+    borderRadius: Math.min(width * 0.08, 32), // Responsive border radius
+    padding: width * 0.06, // 6% of screen width
     shadowColor: '#000000',
     shadowOffset: { width: 0, height: 20 },
     shadowOpacity: 0.1,
@@ -356,27 +408,29 @@ const styles = StyleSheet.create({
   },
   cardHeader: {
     alignItems: 'center',
-    marginBottom: 32,
+    marginBottom: height * 0.025, // 2.5% of screen height
   },
   cardTitle: {
-    fontSize: 28,
+    fontSize: Math.min(width * 0.07, 28), // Responsive font size
     fontWeight: 'bold',
     color: '#000000',
     marginBottom: 8,
+    textAlign: 'center',
   },
   cardSubtitle: {
-    fontSize: 15,
+    fontSize: Math.min(width * 0.0375, 15), // Responsive font size
     color: '#666666',
     textAlign: 'center',
     lineHeight: 20,
+    paddingHorizontal: width * 0.02,
   },
   demoCard: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#f8f8f8',
-    borderRadius: 20,
-    padding: 20,
-    marginBottom: 32,
+    borderRadius: Math.min(width * 0.05, 20),
+    padding: width * 0.04,
+    marginBottom: height * 0.02,
     shadowColor: '#000000',
     shadowOffset: { width: -4, height: -4 },
     shadowOpacity: 0.05,
@@ -384,9 +438,9 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   demoIconContainer: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: width * 0.12,
+    height: width * 0.12,
+    borderRadius: width * 0.06,
     backgroundColor: '#ffffff',
     justifyContent: 'center',
     alignItems: 'center',
@@ -398,34 +452,34 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   demoIcon: {
-    fontSize: 20,
+    fontSize: Math.min(width * 0.05, 20),
   },
   demoContent: {
     flex: 1,
   },
   demoTitle: {
-    fontSize: 16,
+    fontSize: Math.min(width * 0.04, 16),
     fontWeight: '600',
     color: '#000000',
     marginBottom: 2,
   },
   demoText: {
-    fontSize: 13,
+    fontSize: Math.min(width * 0.0325, 13),
     color: '#666666',
   },
   demoArrow: {
-    fontSize: 18,
+    fontSize: Math.min(width * 0.045, 18),
     color: '#000000',
     fontWeight: 'bold',
   },
   formSection: {
-    marginBottom: 32,
+    marginBottom: height * 0.02,
   },
   inputGroup: {
-    marginBottom: 24,
+    marginBottom: height * 0.025,
   },
   inputLabel: {
-    fontSize: 14,
+    fontSize: Math.min(width * 0.035, 14),
     fontWeight: '600',
     color: '#000000',
     marginBottom: 12,
@@ -435,8 +489,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#f8f8f8',
-    borderRadius: 16,
-    paddingHorizontal: 20,
+    borderRadius: Math.min(width * 0.04, 16),
+    paddingHorizontal: width * 0.05,
     paddingVertical: 4,
     shadowColor: '#000000',
     shadowOffset: { width: -2, height: -2 },
@@ -445,33 +499,64 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   inputIconContainer: {
-    width: 40,
-    height: 40,
+    width: width * 0.1,
+    height: width * 0.1,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
   },
   inputIcon: {
-    fontSize: 18,
+    fontSize: Math.min(width * 0.045, 18),
   },
   textInput: {
     flex: 1,
-    fontSize: 16,
+    fontSize: Math.min(width * 0.04, 16),
     color: '#000000',
-    paddingVertical: 16,
+    paddingVertical: height * 0.02,
   },
   passwordToggle: {
     padding: 8,
   },
   passwordToggleText: {
-    fontSize: 18,
+    fontSize: Math.min(width * 0.045, 18),
+  },
+  buttonsSection: {
+    marginBottom: height * 0.02,
+  },
+  quickSignInButton: {
+    backgroundColor: '#f0f0f0',
+    borderRadius: Math.min(width * 0.04, 16),
+    paddingVertical: height * 0.02,
+    paddingHorizontal: width * 0.06,
+    marginBottom: height * 0.015,
+    shadowColor: '#000000',
+    shadowOffset: { width: -2, height: -2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 3,
+    borderWidth: 2,
+    borderColor: '#e0e0e0',
+  },
+  quickSignInContent: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  quickSignInIcon: {
+    fontSize: Math.min(width * 0.045, 18),
+    marginRight: 10,
+  },
+  quickSignInText: {
+    fontSize: Math.min(width * 0.04, 16),
+    fontWeight: '600',
+    color: '#333333',
   },
   primaryButton: {
     backgroundColor: '#000000',
-    borderRadius: 16,
-    paddingVertical: 20,
-    paddingHorizontal: 32,
-    marginBottom: 24,
+    borderRadius: Math.min(width * 0.04, 16),
+    paddingVertical: height * 0.025,
+    paddingHorizontal: width * 0.08,
+    marginBottom: height * 0.015,
     shadowColor: '#000000',
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.2,
@@ -481,19 +566,39 @@ const styles = StyleSheet.create({
   primaryButtonLoading: {
     backgroundColor: '#666666',
   },
+  secondaryButton: {
+    backgroundColor: '#ffffff',
+    borderRadius: Math.min(width * 0.04, 16),
+    paddingVertical: height * 0.02,
+    paddingHorizontal: width * 0.08,
+    marginBottom: height * 0.02,
+    borderWidth: 2,
+    borderColor: '#000000',
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  secondaryButtonText: {
+    fontSize: Math.min(width * 0.04, 16),
+    fontWeight: 'bold',
+    color: '#000000',
+    textAlign: 'center',
+  },
   buttonContent: {
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
   },
   buttonText: {
-    fontSize: 18,
+    fontSize: Math.min(width * 0.045, 18),
     fontWeight: 'bold',
     color: '#ffffff',
     marginRight: 12,
   },
   buttonArrow: {
-    fontSize: 18,
+    fontSize: Math.min(width * 0.045, 18),
     color: '#ffffff',
     fontWeight: 'bold',
   },
@@ -508,13 +613,16 @@ const styles = StyleSheet.create({
     marginRight: 12,
   },
   loadingText: {
-    fontSize: 16,
+    fontSize: Math.min(width * 0.04, 16),
     color: '#ffffff',
+  },
+  footerSection: {
+    marginTop: height * 0.01,
   },
   dividerContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginVertical: 24,
+    marginVertical: height * 0.02,
   },
   dividerLine: {
     flex: 1,
@@ -523,24 +631,25 @@ const styles = StyleSheet.create({
   },
   dividerText: {
     marginHorizontal: 20,
-    fontSize: 14,
+    fontSize: Math.min(width * 0.035, 14),
     color: '#999999',
     fontWeight: '500',
   },
   switchButton: {
     alignItems: 'center',
-    paddingVertical: 16,
-    marginBottom: 16,
+    paddingVertical: height * 0.02,
+    marginBottom: height * 0.015,
   },
   switchText: {
-    fontSize: 15,
+    fontSize: Math.min(width * 0.0375, 15),
     color: '#000000',
     fontWeight: '500',
+    textAlign: 'center',
   },
   infoCard: {
     backgroundColor: '#f8f8f8',
-    borderRadius: 16,
-    padding: 20,
+    borderRadius: Math.min(width * 0.04, 16),
+    padding: width * 0.05,
     shadowColor: '#000000',
     shadowOffset: { width: -2, height: -2 },
     shadowOpacity: 0.03,
@@ -553,19 +662,19 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   infoIcon: {
-    fontSize: 16,
+    fontSize: Math.min(width * 0.04, 16),
     marginRight: 8,
   },
   infoTitle: {
-    fontSize: 14,
+    fontSize: Math.min(width * 0.035, 14),
     fontWeight: '600',
     color: '#000000',
   },
   infoContent: {
-    marginLeft: 24,
+    marginLeft: width * 0.06,
   },
   infoText: {
-    fontSize: 13,
+    fontSize: Math.min(width * 0.0325, 13),
     color: '#666666',
     fontFamily: 'monospace',
     marginBottom: 4,
